@@ -3,7 +3,7 @@
 **Ask questions about refugee and population statistics in plain English. The app writes the SQL, checks it, runs it read-only on SQLite, and shows the result. Its accuracy is measured on a hand-written evaluation set.**
 
 ![Screenshot of the app](docs/screenshot.png)
-> **[PLACEHOLDER]** Add `docs/screenshot.png` after running the app locally. Demo link: not deployed.
+> **[PLACEHOLDER]** Add `docs/screenshot.png` after running the app locally. **Live demo:** [ADD STREAMLIT APP URL AFTER DEPLOYING]
 
 [![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
 > **[PLACEHOLDER]** Replace `OWNER/REPO` once the repository is on GitHub.
@@ -103,6 +103,28 @@ for model in client.models.list():
 
 A listed model can still be unavailable, so try one question with `python -m askdata.nl2sql.pipeline` after changing it.
 
+## Deploying on Streamlit Community Cloud
+
+1. Push the repository to GitHub. Neither the data nor the database is in the repository.
+2. On Streamlit Community Cloud, create a new app from the repository:
+   - branch: `main`
+   - main file path: `app/streamlit_app.py`
+   - Python version: 3.11 or newer (advanced settings)
+3. In the app's **Secrets**, add your key:
+
+   ```toml
+   GEMINI_API_KEY = "your-key-here"
+   ```
+
+4. Deploy. `requirements.txt` installs the package. On the first start the app downloads the CSVs from the UNHCR and World Bank APIs and builds `data/askdata.db` once, so the first page load is slower.
+
+The public app uses **your** API key for every visitor:
+
+- Use a key without billing enabled, so heavy use can only exhaust the free quota and never produces a bill.
+- Each browser session can ask at most `app.max_questions_per_session` questions (`configs/config.yaml`). This only slows down casual misuse; reloading the page starts a new session.
+- The history panel shows each visitor only their own questions.
+- The history file lives on the app's temporary disk and is lost when the app restarts.
+
 ## Data
 
 | Table | Source | Licence |
@@ -181,7 +203,7 @@ tests/                       pytest suite (fake data, fake model)
 - **Row limit.** Queries without their own `LIMIT` are capped at the configured row limit (100), so a gold result larger than that cannot be matched. `run_eval` warns about such gold queries.
 - **Latency is noisy.** API response times vary a lot between calls, so medians are reported alongside means.
 - **Temporary API failures.** A 503 or 429 that persists through all retries is scored as a failure (`llm_error`). These answers are visible in the results CSV.
-- **Local, single-user app.** The Streamlit app shares one database connection and is meant to run locally.
+- **Small-scale app.** The Streamlit app shares one read-only database connection between visitors and limits questions per session. It is a demo, not built for heavy traffic.
 - **UNHCR licence.** No explicit licence was found for the UNHCR data, so the raw files are not included. They are downloaded with `python -m askdata.db.download`.
 
 ## License
