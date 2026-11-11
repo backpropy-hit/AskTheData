@@ -14,9 +14,12 @@ Rebuild them with the download commands below, then run `python -m askdata.db.lo
 | Download URL | `https://api.unhcr.org/population/v1/population/?yearFrom=2016&yearTo=2025&coo_all=true&coa_all=true&download=true` |
 | Files | `unhcr/unhcr_population_2016_2025.csv` (56,318 rows, one per year × origin × asylum), `unhcr/unhcr_footnotes.csv` |
 | Coverage | 2016–2025, year-end figures |
-| Licence | **NOT VERIFIED. Check manually before committing the raw files or publishing.** |
+| Licence | **No explicit licence found** (checked manually on 2026-11-11, see below) |
+| Attribution | "UNHCR Refugee Data Finder, https://www.unhcr.org/refugee-statistics/" |
 
-**Licence check status.** The UNHCR website returned HTTP 403 to automated requests, and the API documentation states no data licence. UNHCR datasets on the Humanitarian Data Exchange list different licences per dataset: CC BY, CC BY-IGO 3.0 and CC0 were all seen. None of those entries is this exact API download, so they cannot be relied on. **To do:** open the Refugee Data Finder terms of use in a browser, then record the licence and the required citation here.
+**Licence check status.** On 2026-11-11 the project owner checked the Refugee Data Finder website by hand and found no licence statement. Automated requests to the site returned HTTP 403, and the API documentation states no data licence either. UNHCR datasets on the Humanitarian Data Exchange list different licences per dataset (CC BY, CC BY-IGO 3.0 and CC0 were all seen), but none of those entries is this exact API download.
+
+A missing licence does not grant redistribution rights. For that reason the raw UNHCR CSVs are not committed to this repository. Recreate them with the download URL above.
 
 ## 2. World Bank: Population, total (SP.POP.TOTL)
 
