@@ -13,7 +13,7 @@ from askdata.nl2sql.pipeline import (
     STATUS_SQL_ERROR,
     Pipeline,
 )
-from fakes import FakeLLM
+from fakes import FakeLLM, FunctionLLM
 
 GOOD_SQL = "SELECT refugees FROM displacement WHERE origin_iso3 = 'SOM' AND asylum_iso3 = 'KEN'"
 
@@ -135,6 +135,22 @@ def test_llm_error_is_reported_not_raised(db_path: Path) -> None:
     assert result.status == STATUS_LLM_ERROR
     assert "503" in result.error
     assert result.attempts == 1
+
+
+def test_cached_calls_are_counted(db_path: Path) -> None:
+    """Cached replies are counted so the evaluation can leave them out of latency."""
+    pipeline = make_pipeline(db_path, [GOOD_SQL])
+    pipeline.client = FunctionLLM(lambda system, user: GOOD_SQL, from_cache=True)
+    result = pipeline.ask("q")
+    assert result.cached_calls == 1
+    assert result.fully_cached is True
+
+
+def test_fresh_calls_are_not_fully_cached(db_path: Path) -> None:
+    """Replies from the real API are not marked as cached."""
+    result = make_pipeline(db_path, [GOOD_SQL]).ask("q")
+    assert result.cached_calls == 0
+    assert result.fully_cached is False
 
 
 def test_latency_is_recorded(db_path: Path) -> None:

@@ -47,6 +47,12 @@ class PipelineResult:
     attempts: int = 0  # number of model calls made
     validator_rejections: int = 0  # how many generated queries the validator blocked
     latency_seconds: float = 0.0  # total wall-clock time for the whole question
+    cached_calls: int = 0  # model calls answered from the on-disk cache
+
+    @property
+    def fully_cached(self) -> bool:
+        """True if every model call came from the cache (so latency is not meaningful)."""
+        return self.attempts > 0 and self.cached_calls == self.attempts
 
 
 def list_tables(connection: sqlite3.Connection) -> set[str]:
@@ -137,6 +143,9 @@ class Pipeline:
             result.status = STATUS_LLM_ERROR
             result.error = str(error)
             return None  # retrying with an error message would not fix an API failure
+
+        if generation.from_cache:
+            result.cached_calls += 1
 
         if generation.refused:
             result.status = STATUS_REFUSED

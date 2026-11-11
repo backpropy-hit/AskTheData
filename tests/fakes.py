@@ -1,6 +1,30 @@
-"""A fake LLM client for tests: returns pre-written replies, no network."""
+"""Fake LLM clients for tests: return pre-written replies, no network."""
+
+from collections.abc import Callable
 
 from askdata.llm.client import LLMError, LLMResponse
+
+
+class FunctionLLM:
+    """Replies by calling a function with (system_prompt, user_prompt).
+
+    Useful when the reply should depend on the question or on whether the
+    prompt is a retry, rather than on the order of calls.
+    """
+
+    model_name = "fake-llm"
+
+    def __init__(self, reply_for: Callable[[str, str], str], from_cache: bool = False) -> None:
+        """reply_for: function returning the reply text; from_cache: value to report."""
+        self.reply_for = reply_for
+        self.from_cache = from_cache
+        self.user_prompts: list[str] = []
+
+    def generate(self, system_prompt: str, user_prompt: str) -> LLMResponse:
+        """Record the prompt and return reply_for(system_prompt, user_prompt)."""
+        self.user_prompts.append(user_prompt)
+        text = self.reply_for(system_prompt, user_prompt)
+        return LLMResponse(text=text, from_cache=self.from_cache, latency_seconds=0.01)
 
 
 class FakeLLM:
