@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "askdata"
+version = "0.1.0"
+description = "Ask the Data: natural-language-to-SQL over humanitarian statistics, with validation, read-only execution and a measured evaluation."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=1.0",
+    "sqlglot>=25.0",
+    "streamlit>=1.35",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "app"]
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: import order, B: common bugs,
+# UP: modern syntax, N: naming, SIM: simplifications.
+select = ["E", "W", "F", "I", "B", "UP", "N", "SIM"]
