@@ -1,0 +1,41 @@
+# Lint and test on every push and pull request.
+# No API key and no raw data are needed: tests use a small fake dataset
+# and fake LLM clients.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install the package with dev tools
+        run: python -m pip install -e ".[dev]"
+
+      - name: Lint (ruff check)
+        run: python -m ruff check .
+
+      - name: Check formatting (ruff format)
+        run: python -m ruff format --check .
+
+      - name: Run tests
+        run: python -m pytest -rs
