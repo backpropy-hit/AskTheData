@@ -6,7 +6,8 @@ model:
   # (see README, "Checking the model name").
   name: gemini-3.5-flash
   temperature: 0.0
-  # How many times to retry a call that fails because of a rate limit (HTTP 429).
+  # How many times to retry a call that fails because of a rate limit (HTTP 429)
+  # or because the model is busy (HTTP 503 "high demand").
   rate_limit_retries: 3
   # Seconds to wait before the first rate-limit retry; doubles each time.
   rate_limit_wait_seconds: 5.0

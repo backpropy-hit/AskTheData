@@ -95,6 +95,16 @@ def test_rate_limit_is_retried_with_growing_wait() -> None:
     assert waits == [1.0, 2.0]
 
 
+def test_busy_model_503_is_retried() -> None:
+    """A 503 'high demand' error is temporary, so it is retried like a 429."""
+    waits: list[float] = []
+    client = make_client([api_error(503), "SELECT 1;"], cache_dir=None)
+    client.sleep = waits.append
+
+    assert client.generate("sys", "user").text == "SELECT 1;"
+    assert waits == [1.0]
+
+
 def test_rate_limit_gives_up_after_max_retries() -> None:
     """After the allowed retries a clear LLMError is raised."""
     client = make_client([api_error(429)] * 3, cache_dir=None, retries=2)

@@ -2,7 +2,8 @@
 
 What it adds on top of the SDK:
   * fixed model and temperature from configs/config.yaml,
-  * retry with a growing wait when the API says "too many requests" (HTTP 429),
+  * retry with a growing wait when the API says "too many requests" (HTTP 429)
+    or "model overloaded / high demand" (HTTP 503),
   * an on-disk cache, so running the evaluation again does not repeat calls.
 
 The pipeline only depends on the ``LLMClient`` protocol, so tests can pass a
@@ -28,7 +29,10 @@ from google.genai import errors, types
 from askdata.config import REPO_ROOT, Config
 
 API_KEY_VARIABLE = "GEMINI_API_KEY"
-RATE_LIMIT_STATUS = 429
+# HTTP status codes that mean "try again later":
+#   429 = too many requests (rate limit), 503 = model busy ("high demand").
+# Any other error (bad request, unknown model, ...) will not fix itself, so it is not retried.
+RETRYABLE_STATUSES = {429, 503}
 
 
 class LLMError(Exception):
@@ -140,7 +144,7 @@ class GeminiClient:
             model_name: Gemini model id, e.g. "gemini-2.5-flash".
             temperature: Sampling temperature (0 for the most repeatable output).
             cache_dir: Folder for cached replies, or None to switch caching off.
-            rate_limit_retries: How many times to retry after an HTTP 429.
+            rate_limit_retries: How many times to retry after an HTTP 429 or 503.
             rate_limit_wait_seconds: First wait before retrying; doubles each time.
             sdk_client: A ready google-genai client. Tests pass a fake one here.
                 If None, a real client is created with the key from .env.
@@ -195,19 +199,19 @@ class GeminiClient:
         return LLMResponse(text=text, from_cache=False, latency_seconds=time.perf_counter() - start)
 
     def _call_with_retry(self, system_prompt: str, user_prompt: str) -> str:
-        """Call the API, waiting and retrying if it reports a rate limit (HTTP 429)."""
+        """Call the API, waiting and retrying on a rate limit (429) or busy model (503)."""
         wait_seconds = self.rate_limit_wait_seconds
         attempt = 0
         while True:
             try:
                 return self._call_once(system_prompt, user_prompt)
             except errors.APIError as error:
-                is_rate_limit = error.code == RATE_LIMIT_STATUS
-                if not is_rate_limit or attempt >= self.rate_limit_retries:
+                is_temporary = error.code in RETRYABLE_STATUSES
+                if not is_temporary or attempt >= self.rate_limit_retries:
                     raise LLMError(f"Gemini API error ({error.code}): {error.message}") from error
                 attempt += 1
                 print(
-                    f"Rate limited; waiting {wait_seconds:.0f}s "
+                    f"Gemini API busy ({error.code}); waiting {wait_seconds:.0f}s "
                     f"(retry {attempt} of {self.rate_limit_retries})"
                 )
                 self.sleep(wait_seconds)
