@@ -1,0 +1,76 @@
+---
+title: 'Ask the Data: natural-language questions over humanitarian statistics, with measured accuracy'
+date: '2026-11-11'
+tags: ['nlp', 'sql', 'llm', 'evaluation', 'python', 'streamlit']
+draft: false
+summary: 'A small NL-to-SQL tool over UNHCR and World Bank data. It validates every generated query, runs it read-only, and reports how often the answer is actually right. [PLACEHOLDER: add the headline accuracy once the evaluation has been run.]'
+authors: ['default']
+---
+
+> **[PLACEHOLDER: before publishing]** Every bracketed placeholder below must be filled from the latest files in `eval/results/` (use `python -m askdata.evaluation.report`). Do not publish this page while placeholders remain.
+
+## Problem
+
+Nonprofit staff often keep their numbers in databases but cannot write SQL. Large language models can translate a question into SQL, but the query can be wrong, and in a careless setup it can even change the data. Most demos show a few good answers and never say how often the answers are correct.
+
+I wanted to build a careful version. It should generate SQL from a plain-English question, check the query before running it, make sure it can never write to the database, and **measure** its accuracy on questions it has not seen.
+
+## What I built
+
+**Ask the Data** answers questions about refugees, asylum-seekers, internally displaced people and population. The data comes from UNHCR and the World Bank, linked by country code.
+
+- **Data layer.**
+  - A loader turns the public CSVs into a three-table SQLite database (`countries`, `population`, `displacement`) with keys, foreign keys and indexes.
+  - The displacement table has two country columns (origin and asylum), so some questions need the country table joined twice.
+- **Prompting.**
+  - The prompt contains the real `CREATE TABLE` statements, a one-line description of every column, and the actual values of categorical columns, such as region names and unusual country spellings.
+  - Two variants are compared: zero-shot (schema only) and few-shot (schema plus worked examples).
+  - The model is told to reply with a fixed "cannot answer from this data" message when the tables cannot answer a question.
+- **Safety in two layers.**
+  - A sqlglot-based validator accepts exactly one `SELECT` over the known tables. It blocks writes, `PRAGMA`, `ATTACH`, table functions and multiple statements, and adds a row limit.
+  - The query then runs on a read-only SQLite connection with a time limit, so even a validator bug cannot change the data.
+- **Self-correction.** If the validator rejects a query or SQLite reports an error, the error message is sent back to the model once.
+- **Evaluation.**
+  - Hand-written questions with gold SQL, in easy, medium, hard and unanswerable groups.
+  - Scored by execution accuracy: the generated query must return the same rows as the gold query.
+  - Three strategies compared: zero-shot, few-shot, and few-shot with one retry.
+  - Failures sorted by type.
+  - A test fails if any few-shot example matches an evaluation question, so the accuracy number is not inflated by leakage.
+- **App.**
+  - A Streamlit interface shows the generated SQL, the result table, a simple chart when the result suits one, clear error messages and a per-session history.
+  - It is deployed on Streamlit Community Cloud and builds its database on first start from the public APIs.
+- **Engineering.** Modular package, typed config, a pytest suite that runs without network or data (fake model, small fake dataset), and GitHub Actions CI with ruff and pytest.
+
+## Result
+
+> **[PLACEHOLDER: no evaluation has been run yet.]** Fill this section from the latest `eval/results/*_summary.csv`.
+
+- **Model and run date:** [MODEL] on [RUN DATE]
+- **Evaluation set:** [N] hand-written questions ([N] easy, [N] medium, [N] hard, [N] unanswerable)
+
+| Strategy | Execution accuracy | Validator rejections | Median latency |
+| --- | --- | --- | --- |
+| Zero-shot | [X]% | [X] | [X] s |
+| Few-shot | [X]% | [X] | [X] s |
+| Few-shot + one retry | [X]% | [X] | [X] s |
+
+**What the numbers show:** [PLACEHOLDER: one or two sentences, e.g. how much few-shot examples helped over zero-shot, and whether the retry helped. Report it even if it did not.]
+
+**Most common failure types:** [PLACEHOLDER: e.g. wrong join, wrong filter value, with one short example each, taken from the classified results CSV.]
+
+**Limitations I would mention in an interview:**
+
+- The evaluation set is small and written by one person.
+- Model behaviour changes between versions, which is why every result records the model and run date.
+- Execution accuracy can pass a wrong query that happens to return the same rows, and can fail a correct one that returns columns in a different order.
+- The validator reduces risk but is not a guarantee; the read-only connection is the second layer.
+
+## Tools
+
+Python, SQLite, sqlglot, Google Gemini API (google-genai SDK), Streamlit, pandas, pytest, ruff, GitHub Actions, Streamlit Community Cloud.
+
+## Links
+
+- **Code:** [github.com/backpropy-hit/AskTheData](https://github.com/backpropy-hit/AskTheData)
+- **Live demo:** [askthedata-7yzqp8czec74htrvnalurx.streamlit.app](https://askthedata-7yzqp8czec74htrvnalurx.streamlit.app/)
+- **Data sources:** UNHCR Refugee Data Finder and World Bank World Development Indicators (CC BY 4.0). Details in [data/sources.md](https://github.com/backpropy-hit/AskTheData/blob/main/data/sources.md).
