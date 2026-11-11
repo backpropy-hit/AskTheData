@@ -4,7 +4,7 @@
 model:
   # Gemini model id. Check that it is still valid before running the evaluation
   # (see README, "Checking the model name").
-  name: gemini-2.5-flash
+  name: gemini-3.5-flash
   temperature: 0.0
   # How many times to retry a call that fails because of a rate limit (HTTP 429).
   rate_limit_retries: 3
