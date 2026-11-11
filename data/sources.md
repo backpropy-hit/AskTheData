@@ -15,7 +15,7 @@ Rebuild them with the download commands below, then run `python -m askdata.db.lo
 | Files | `unhcr/unhcr_population_2016_2025.csv` (56,318 rows, one per year × origin × asylum), `unhcr/unhcr_footnotes.csv` |
 | Coverage | 2016–2025, year-end figures |
 | Licence | **No explicit licence found** (checked manually on 2026-11-11, see below) |
-| Attribution | "UNHCR Refugee Data Finder, https://www.unhcr.org/refugee-statistics/" |
+| Attribution | "UNHCR Refugee Data Finder, <https://www.unhcr.org/refugee-statistics/>" |
 
 **Licence check status.** On 2026-11-11 the project owner checked the Refugee Data Finder website by hand and found no licence statement. Automated requests to the site returned HTTP 403, and the API documentation states no data licence either. UNHCR datasets on the Humanitarian Data Exchange list different licences per dataset (CC BY, CC BY-IGO 3.0 and CC0 were all seen), but none of those entries is this exact API download.
 
