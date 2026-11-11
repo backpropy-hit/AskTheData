@@ -2,7 +2,7 @@
 
 All files were downloaded on **2026-11-11** into `data/raw/`. The raw files are **not committed** (see `.gitignore`) until the licence check below is complete for every source.
 
-Rebuild them with the download commands below, then run `python -m askdata.db.loader`.
+Recreate them with `python -m askdata.db.download` (or `make download`), then build the database with `python -m askdata.db.loader`. The script fetches only the three files the loader uses. The footnotes and indicator-metadata files listed below came in the same downloads and are kept for reference only.
 
 ## 1. UNHCR: forcibly displaced and stateless populations
 

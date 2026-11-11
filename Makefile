@@ -3,7 +3,7 @@
 
 PYTHON ?= python
 
-.PHONY: install lint format test load eval app
+.PHONY: install lint format test download load eval app
 
 install:  ## Install the package in editable mode with dev tools
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -18,6 +18,9 @@ format:   ## Auto-format and fix what ruff can fix
 
 test:     ## Run the test suite
 	$(PYTHON) -m pytest
+
+download: ## Fetch the raw CSVs into data/raw (see data/sources.md)
+	$(PYTHON) -m askdata.db.download
 
 load:     ## Build data/askdata.db from the CSVs in data/raw
 	$(PYTHON) -m askdata.db.loader
