@@ -5,8 +5,6 @@
 ![Screenshot of the app](docs/screenshot.png)
 **Live demo:** <https://askthedata-7yzqp8czec74htrvnalurx.streamlit.app/>
 
-> **[PLACEHOLDER]** Add `docs/screenshot.png` (a screenshot of the app answering a question).
-
 [![CI](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml/badge.svg)](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml)
 
 ## The problem
