@@ -54,7 +54,7 @@ def accuracy_table(summary: list[dict[str, str]]) -> str:
         "| Strategy | All | Easy | Medium | Hard | Unanswerable "
         "| Validator rejections | Median latency (s) |"
     )
-    lines = [header, "|---|---|---|---|---|---|---|---|"]
+    lines = [header, "| --- | --- | --- | --- | --- | --- | --- | --- |"]
 
     strategies: list[str] = []
     for row in summary:
@@ -91,7 +91,7 @@ def failure_type_table(results: list[dict[str, str]]) -> str:
         if failure_type not in examples:
             examples[failure_type] = f"{row['strategy']} / {row['id']}"
 
-    lines = ["| Failure type | Count | Example (strategy / question id) |", "|---|---|---|"]
+    lines = ["| Failure type | Count | Example (strategy / question id) |", "| --- | --- | --- |"]
     for failure_type, count in counts.most_common():
         lines.append(f"| {failure_type} | {count} | {examples[failure_type]} |")
     return "\n".join(lines)
