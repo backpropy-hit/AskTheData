@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -71,7 +71,7 @@ class QueryHistory:
 
     def log(self, result: PipelineResult, model: str | None = None) -> None:
         """Save one pipeline result."""
-        asked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        asked_at = datetime.now(UTC).isoformat(timespec="seconds")
         self._execute(
             "INSERT INTO history (asked_at, question, sql, status, latency_seconds, "
             "row_count, error, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",

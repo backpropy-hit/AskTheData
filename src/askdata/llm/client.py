@@ -18,7 +18,7 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -101,7 +101,7 @@ class ResponseCache:
         record = {
             **request_info,
             "text": text,
-            "saved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "saved_at": datetime.now(UTC).isoformat(timespec="seconds"),
         }
         # Write to a temporary file first so an interrupted run never leaves
         # a half-written JSON file that would break the next read.

@@ -11,14 +11,14 @@ evaluation would measure memorisation. tests/test_prompts.py checks this.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 # The exact reply the model must give when the data cannot answer a question.
 REFUSAL_PREFIX = "CANNOT ANSWER"
 REFUSAL_REPLY = f"{REFUSAL_PREFIX}: cannot answer from this data"
 
 
-class PromptStrategy(str, Enum):
+class PromptStrategy(StrEnum):
     """Which prompt variant to build."""
 
     ZERO_SHOT = "zero_shot"
