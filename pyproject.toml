@@ -41,3 +41,7 @@ src = ["src", "tests", "app"]
 # E/W: pycodestyle, F: pyflakes, I: import order, B: common bugs,
 # UP: modern syntax, N: naming, SIM: simplifications.
 select = ["E", "W", "F", "I", "B", "UP", "N", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# The fake CSVs copy the real (very long) source headers exactly.
+"tests/conftest.py" = ["E501"]
