@@ -5,8 +5,7 @@
 ![Screenshot of the app](docs/screenshot.png)
 > **[PLACEHOLDER]** Add `docs/screenshot.png` after running the app locally. **Live demo:** [ADD STREAMLIT APP URL AFTER DEPLOYING]
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
-> **[PLACEHOLDER]** Replace `OWNER/REPO` once the repository is on GitHub.
+[![CI](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml/badge.svg)](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml)
 
 ## The problem
 
