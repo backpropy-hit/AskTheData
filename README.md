@@ -3,7 +3,9 @@
 **Ask questions about refugee and population statistics in plain English. The app writes the SQL, checks it, runs it read-only on SQLite, and shows the result. Its accuracy is measured on a hand-written evaluation set.**
 
 ![Screenshot of the app](docs/screenshot.png)
-> **[PLACEHOLDER]** Add `docs/screenshot.png` after running the app locally. **Live demo:** [ADD STREAMLIT APP URL AFTER DEPLOYING]
+**Live demo:** <https://askthedata-7yzqp8czec74htrvnalurx.streamlit.app/>
+
+> **[PLACEHOLDER]** Add `docs/screenshot.png` (a screenshot of the app answering a question).
 
 [![CI](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml/badge.svg)](https://github.com/backpropy-hit/AskTheData/actions/workflows/ci.yml)
 
