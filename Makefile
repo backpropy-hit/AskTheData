@@ -3,7 +3,7 @@
 
 PYTHON ?= python
 
-.PHONY: install lint format test download load eval app
+.PHONY: install lint format test download load eval report app
 
 install:  ## Install the package in editable mode with dev tools
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -27,6 +27,9 @@ load:     ## Build data/askdata.db from the CSVs in data/raw
 
 eval:     ## Run the evaluation for all prompt strategies
 	$(PYTHON) -m askdata.evaluation.run_eval
+
+report:   ## Print README results tables from the latest run
+	$(PYTHON) -m askdata.evaluation.report
 
 app:      ## Start the Streamlit app
 	$(PYTHON) -m streamlit run app/streamlit_app.py
