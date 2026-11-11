@@ -1,0 +1,28 @@
+# Ask the Data: project configuration.
+# Relative paths are resolved from the repository root.
+
+model:
+  # Gemini model id. Check that it is still valid before running the evaluation
+  # (see README, "Checking the model name").
+  name: gemini-2.5-flash
+  temperature: 0.0
+  # How many times to retry a call that fails because of a rate limit (HTTP 429).
+  rate_limit_retries: 3
+  # Seconds to wait before the first rate-limit retry; doubles each time.
+  rate_limit_wait_seconds: 5.0
+
+paths:
+  database: data/askdata.db        # built by `python -m askdata.db.loader`
+  history: data/history.db         # query log, kept separate from the data
+  raw_data: data/raw               # input CSVs
+  llm_cache: .cache/llm            # on-disk cache of model responses
+  questions: eval/questions.jsonl  # evaluation questions (written by hand)
+  results: eval/results            # one CSV per evaluation run
+
+query:
+  # LIMIT added by the validator when a query has none.
+  row_limit: 100
+  # Queries running longer than this are cancelled.
+  timeout_seconds: 5.0
+  # Number of times the pipeline sends an SQL error back to the model.
+  sql_retries: 1
