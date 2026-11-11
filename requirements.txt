@@ -1,0 +1,4 @@
+# Used by Streamlit Community Cloud to install the app.
+# "-e ." installs this repository (and the dependencies in pyproject.toml) in
+# editable mode, so configs/config.yaml is found next to the source code.
+-e .

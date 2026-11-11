@@ -13,15 +13,16 @@ from streamlit.testing.v1 import AppTest
 import askdata.config
 from askdata.config import load_config
 from askdata.db.connection import connect_read_only
+from askdata.history import QueryHistory
 from askdata.llm.prompts import REFUSAL_REPLY, PromptStrategy
-from askdata.nl2sql.pipeline import Pipeline
+from askdata.nl2sql.pipeline import Pipeline, PipelineResult
 from fakes import FakeLLM
 
 APP_PATH = Path(__file__).resolve().parents[1] / "app" / "streamlit_app.py"
 TREND_SQL = "SELECT year, SUM(refugees) AS refugees FROM displacement GROUP BY year ORDER BY year"
 
 
-def write_test_config(tmp_path: Path, db_path: Path) -> Path:
+def write_test_config(tmp_path: Path, db_path: Path, max_questions: int) -> Path:
     """Write a config file that points at the test database and a temporary history."""
     text = f"""
 model:
@@ -40,6 +41,8 @@ query:
   row_limit: 100
   timeout_seconds: 5
   sql_retries: 1
+app:
+  max_questions_per_session: {max_questions}
 """
     path = tmp_path / "config.yaml"
     path.write_text(text, encoding="utf-8")
@@ -49,11 +52,11 @@ query:
 @pytest.fixture
 def app(tmp_path: Path, db_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Return a function that starts the app with the given fake LLM replies."""
-    config_path = write_test_config(tmp_path, db_path)
-    monkeypatch.setattr(askdata.config, "load_config", lambda: load_config(config_path))
 
-    def start(replies: list) -> AppTest:
+    def start(replies: list, max_questions: int = 15) -> AppTest:
         """Patch the pipeline to use FakeLLM(replies), then run the app once."""
+        config_path = write_test_config(tmp_path, db_path, max_questions)
+        monkeypatch.setattr(askdata.config, "load_config", lambda: load_config(config_path))
         st.cache_resource.clear()  # do not reuse a pipeline from another test
 
         def fake_from_config(config, strategy=PromptStrategy.FEW_SHOT, max_retries=None):
@@ -133,6 +136,29 @@ def test_history_panel_lists_asked_questions(app) -> None:
     app_test = ask(app([TREND_SQL]), "Refugees per year?")
     history_table = app_test.expander[0].dataframe[0].value
     assert history_table["question"].tolist() == ["Refugees per year?"]
+
+
+def test_question_limit_per_session(app) -> None:
+    """After the limit is reached, no more model calls are made in that session."""
+    app_test = app([TREND_SQL, TREND_SQL, TREND_SQL], max_questions=2)
+    ask(app_test, "first")
+    ask(app_test, "second")
+    ask(app_test, "third")
+    assert not app_test.exception
+    assert any("limit of 2 questions" in warning.value for warning in app_test.warning)
+    assert any("2 of 2" in caption.value for caption in app_test.caption)
+    history_table = app_test.expander[0].dataframe[0].value
+    assert history_table["question"].tolist() == ["second", "first"]
+
+
+def test_history_shows_only_this_session(app, tmp_path: Path) -> None:
+    """Questions logged by another session do not appear in this session's panel."""
+    other = QueryHistory(tmp_path / "history.db")
+    other.log(PipelineResult(question="someone else's question", status="ok"), session_id="x")
+
+    app_test = ask(app([TREND_SQL]), "my question")
+    history_table = app_test.expander[0].dataframe[0].value
+    assert history_table["question"].tolist() == ["my question"]
 
 
 def test_missing_database_shows_setup_error(app, monkeypatch: pytest.MonkeyPatch) -> None:
