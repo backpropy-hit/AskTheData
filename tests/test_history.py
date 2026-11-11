@@ -1,5 +1,6 @@
 """Tests for askdata.history."""
 
+import sqlite3
 from pathlib import Path
 
 from askdata.history import QueryHistory
@@ -39,6 +40,39 @@ def test_recent_is_newest_first_and_limited(tmp_path: Path) -> None:
 
     entries = history.recent(limit=3)
     assert [entry.question for entry in entries] == ["q4", "q3", "q2"]
+
+
+def test_recent_can_be_limited_to_one_session(tmp_path: Path) -> None:
+    """Each session sees only its own questions; without a session, all are returned."""
+    history = QueryHistory(tmp_path / "history.db")
+    history.log(PipelineResult(question="mine", status="ok"), session_id="A")
+    history.log(PipelineResult(question="theirs", status="ok"), session_id="B")
+    history.log(PipelineResult(question="from cli", status="ok"))
+
+    assert [entry.question for entry in history.recent(session_id="A")] == ["mine"]
+    assert len(history.recent()) == 3
+
+
+def test_old_history_file_is_upgraded(tmp_path: Path) -> None:
+    """A file created before session_id existed gets the column added, keeping old rows."""
+    path = tmp_path / "old.db"
+    connection = sqlite3.connect(path)
+    connection.execute(
+        "CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, asked_at TEXT NOT NULL, "
+        "question TEXT NOT NULL, sql TEXT, status TEXT NOT NULL, latency_seconds REAL NOT NULL, "
+        "row_count INTEGER NOT NULL, error TEXT, model TEXT)"
+    )
+    connection.execute(
+        "INSERT INTO history (asked_at, question, status, latency_seconds, row_count) "
+        "VALUES ('2026-01-01', 'old question', 'ok', 1.0, 1)"
+    )
+    connection.commit()
+    connection.close()
+
+    history = QueryHistory(path)
+    history.log(PipelineResult(question="new question", status="ok"), session_id="S")
+    assert [entry.question for entry in history.recent()] == ["new question", "old question"]
+    assert [entry.question for entry in history.recent(session_id="S")] == ["new question"]
 
 
 def test_history_persists_across_instances(tmp_path: Path) -> None:
