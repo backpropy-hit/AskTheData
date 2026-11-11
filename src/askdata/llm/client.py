@@ -120,7 +120,8 @@ def load_api_key() -> str:
     key = os.environ.get(API_KEY_VARIABLE, "").strip()
     if key == "" or key == "your-key-here":
         raise LLMError(
-            f"{API_KEY_VARIABLE} is not set. Copy .env.example to .env and add your key."
+            f"{API_KEY_VARIABLE} is not set. Locally: copy .env.example to .env and add "
+            "your key. On Streamlit Cloud: add it under the app's Settings > Secrets."
         )
     return key
 
