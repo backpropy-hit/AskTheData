@@ -55,12 +55,20 @@ class QueryConfig:
 
 
 @dataclass(frozen=True)
+class AppConfig:
+    """Settings for the Streamlit app."""
+
+    max_questions_per_session: int
+
+
+@dataclass(frozen=True)
 class Config:
     """The full project configuration."""
 
     model: ModelConfig
     paths: PathsConfig
     query: QueryConfig
+    app: AppConfig
 
 
 def _get_section(raw: dict[str, Any], name: str) -> dict[str, Any]:
@@ -133,6 +141,7 @@ def load_config(path: Path | str | None = None, base_dir: Path | None = None) ->
     model_section = _get_section(raw, "model")
     paths_section = _get_section(raw, "paths")
     query_section = _get_section(raw, "query")
+    app_section = _get_section(raw, "app")
 
     model = ModelConfig(
         name=_get_str(model_section, "model", "name"),
@@ -154,7 +163,13 @@ def load_config(path: Path | str | None = None, base_dir: Path | None = None) ->
         sql_retries=_get_int(query_section, "query", "sql_retries"),
     )
 
+    app = AppConfig(
+        max_questions_per_session=_get_int(app_section, "app", "max_questions_per_session"),
+    )
+
     if query.row_limit == 0:
         raise ConfigError("'query.row_limit' must be at least 1.")
+    if app.max_questions_per_session == 0:
+        raise ConfigError("'app.max_questions_per_session' must be at least 1.")
 
-    return Config(model=model, paths=paths, query=query)
+    return Config(model=model, paths=paths, query=query, app=app)

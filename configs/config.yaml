@@ -27,3 +27,8 @@ query:
   timeout_seconds: 5.0
   # Number of times the pipeline sends an SQL error back to the model.
   sql_retries: 1
+
+app:
+  # Questions one browser session may ask. The deployed app uses the owner's
+  # API key for every visitor, so this caps how much one visitor can use it.
+  max_questions_per_session: 15

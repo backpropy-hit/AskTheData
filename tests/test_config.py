@@ -23,6 +23,8 @@ query:
   row_limit: 50
   timeout_seconds: 3
   sql_retries: 1
+app:
+  max_questions_per_session: 10
 """
 
 
@@ -106,6 +108,19 @@ def test_zero_row_limit_raises(tmp_path: Path) -> None:
     """A LIMIT of 0 would return nothing, so it is not allowed."""
     text = VALID_YAML.replace("row_limit: 50", "row_limit: 0")
     with pytest.raises(ConfigError, match="row_limit"):
+        load_config(write_config(tmp_path, text), base_dir=tmp_path)
+
+
+def test_app_settings_are_read(tmp_path: Path) -> None:
+    """The per-session question limit is read from the app section."""
+    config = load_config(write_config(tmp_path, VALID_YAML), base_dir=tmp_path)
+    assert config.app.max_questions_per_session == 10
+
+
+def test_zero_question_limit_raises(tmp_path: Path) -> None:
+    """A limit of 0 would make the app unusable."""
+    text = VALID_YAML.replace("max_questions_per_session: 10", "max_questions_per_session: 0")
+    with pytest.raises(ConfigError, match="max_questions_per_session"):
         load_config(write_config(tmp_path, text), base_dir=tmp_path)
 
 
